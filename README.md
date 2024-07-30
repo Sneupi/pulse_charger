@@ -17,3 +17,8 @@ Pulse charging setup designed for research and development on improving lithium-
 ## Get Started
 
 `#TODO`
+
+## Resources Used
+
+https://github.com/maximweb/kiprim-dc310s
+https://github.com/Digilent/WaveForms-SDK-Getting-Started-PY
