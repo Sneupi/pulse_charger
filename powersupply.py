@@ -98,15 +98,3 @@ class PowerSupply:
     
     def __del__(self):
         self.serial.close()
-
-
-if __name__ == "__main__":
-    import time
-    psu = PowerSupply("COM13")
-    print(psu.get_device_info())
-    print(psu.get_is_active())
-    print(psu.get_measured_current())
-    print(psu.get_measured_voltage())
-    psu.turn_on()
-    time.sleep(2)
-    psu.turn_off()

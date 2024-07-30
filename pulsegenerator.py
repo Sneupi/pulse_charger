@@ -31,14 +31,3 @@ class PulseGenerator:
         if self.running:
             self.stop()
         device.close(self.device_data)
-
-if __name__ == "__main__":
-    import time
-    gen = PulseGenerator()
-    gen.run(27, 25e02, 75)
-    while True:
-        # run continuously until user ctrl+c    
-        try:
-            time.sleep(1)
-        except KeyboardInterrupt:
-            break
