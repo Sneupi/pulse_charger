@@ -3,8 +3,8 @@ from WF_SDK import device, pattern, error   # import instruments
 
 class PulseGenerator:
     """Diligent Digital Discovery pulse pattern generator"""
-    def __init__(self):
-        self.device_data = device.open()
+    def __init__(self, device_data):
+        self.device_data = device_data
         self.running = False
         
     def run(self, dio_out, frequency, duty_cycle):
@@ -30,4 +30,3 @@ class PulseGenerator:
         """close the connection"""
         if self.running:
             self.stop()
-        device.close(self.device_data)
