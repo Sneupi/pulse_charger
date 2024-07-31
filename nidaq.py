@@ -7,9 +7,9 @@ for main pulse charge control
 import nidaqmx
 from nidaqmx.constants import LineGrouping
 
-class LineControl:
-    """Class for controlling the digital 
-    output of one line on the DAQ"""
+class DAQOutput:
+    """Class for switching a digital 
+    output line on the DAQ"""
     def __init__(self, port: int, line: int):
         self.task = nidaqmx.Task()
         self.task.do_channels.add_do_chan(f"Dev1/port{port}/line{line}", 
@@ -26,4 +26,22 @@ class LineControl:
     def __del__(self):
         self.task.stop()
         self.task.close()
+    
+class DAQInput:
+    """Class for reading voltage 
+    between two analog DAQ lines"""
+    def __init__(self, line1: int, line2: int):
+        self.task = nidaqmx.Task()
+        self.task.ai_channels.add_ai_voltage_chan(f"Dev1/ai{line1}")
+        self.task.ai_channels.add_ai_voltage_chan(f"Dev1/ai{line2}")
+        self.task.start()
+    
+    def read(self):
+        v1, v2 = self.task.read()
+        return (v1-v2)
+    
+    def __del__(self):
+        self.task.stop()
+        self.task.close()
+
     
