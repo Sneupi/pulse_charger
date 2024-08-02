@@ -1,12 +1,10 @@
+"""Controller for the Solid State Relays (SSR) used in the pulse charging system"""
 
-from pulsegenerator import PulseGenerator
+from .pulsegenerator import PulseGenerator
 
 class SSRPulser:
-    """Encapsulates control of a Solid State Relay (SSR) 
-    in pulse charging system, which has 3 states of 
-    operation: off, on, and square wave. Using the 
-    Diligent Digital Discovery device as the hardware unit.
-    """
+    """Class for controlling the Solid State Relays (SSR)
+    with 3 different modes: open, shut, pulsed"""
     def __init__(self, device_data, pin):
         """
         Args:
@@ -35,8 +33,8 @@ class SSRPulser:
 #     import time
 #     device_data = device.open()
     
-#     ssr1 = SSRPulser(device_data, pin=27, freq=2500, duty=75)
-#     ssr2 = SSRPulser(device_data, pin=26, freq=1000, duty=50)
+#     ssr1 = SSRPulser(device_data, pin=27)
+#     ssr2 = SSRPulser(device_data, pin=26)
     
 #     while True:
 #         try:
@@ -44,9 +42,9 @@ class SSRPulser:
 #             ssr2.shut()
 #             time.sleep(5)
 #             ssr1.shut()
-#             ssr2.pulse()
+#             ssr2.pulse(1000, 50)
 #             time.sleep(5)
-#             ssr1.pulse()
+#             ssr1.pulse(2500, 75)
 #             ssr2.open()
 #             time.sleep(5)
 #         except KeyboardInterrupt:

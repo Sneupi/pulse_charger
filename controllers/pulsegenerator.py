@@ -1,9 +1,15 @@
+"""Controller related to the pulse generator used in the pulse charging system"""
 
-from WF_SDK import device, pattern, error   # import instruments
+from WF_SDK import device, pattern, error   # using the Digilent WaveForms SDK
 
 class PulseGenerator:
-    """Diligent Digital Discovery pulse pattern generator"""
+    """Pulse pattern generator"""
     def __init__(self, device_data, pin):
+        """
+        Args:
+            device_data (Any): Diligent Digital Discovery device data
+            pin (int): Hardware pin number
+        """
         self.pin = pin
         self.device_data = device_data
         self.running = False

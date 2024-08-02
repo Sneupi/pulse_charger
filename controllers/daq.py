@@ -1,7 +1,7 @@
 """Controllers related to the DAQ unit used in the pulse charging system
 """
 
-import nidaqmx
+import nidaqmx  # using the NI DAQ USB-6008
 
 class DAQInput:
     """Class for reading the voltage of two 
