@@ -7,7 +7,7 @@ class SSRPulser:
     operation: off, on, and square wave. Using the 
     Diligent Digital Discovery device as the hardware unit.
     """
-    def __init__(self, device_data, pin, freq, duty):
+    def __init__(self, device_data, pin):
         """
         Args:
             device_data (Any): Digilent Digital Discovery device data
@@ -16,20 +16,18 @@ class SSRPulser:
             duty (int): Duty cycle of the pulse signal
         """
         self.pin = PulseGenerator(device_data, pin)
-        self.frequency = freq
-        self.duty_cycle = duty
         
-    def set_state_on(self):
-        """Pull the pin up"""
+    def open(self):
+        """Pull the pin constant up"""
         self.pin.run(1, 100)  # 100% duty aka ON
     
-    def set_state_off(self):
-        """Pull the pin down"""
+    def shut(self):
+        """Pull the pin constant down"""
         self.pin.run(1, 0)  # 0% duty aka OFF
     
-    def set_state_pulse(self):
+    def pulse(self, frequency, duty_cycle):
         """Generate waveform pattern on the pin"""
-        self.pin.run(self.frequency, self.duty_cycle)
+        self.pin.run(frequency, duty_cycle)
         
 # if __name__ == "__main__":
 #     # Example usage
@@ -42,14 +40,14 @@ class SSRPulser:
     
 #     while True:
 #         try:
-#             ssr1.set_state_on()
-#             ssr2.set_state_off()
+#             ssr1.open()
+#             ssr2.shut()
 #             time.sleep(5)
-#             ssr1.set_state_off()
-#             ssr2.set_state_pulse()
+#             ssr1.shut()
+#             ssr2.pulse()
 #             time.sleep(5)
-#             ssr1.set_state_pulse()
-#             ssr2.set_state_on()
+#             ssr1.pulse()
+#             ssr2.open()
 #             time.sleep(5)
 #         except KeyboardInterrupt:
 #             break
