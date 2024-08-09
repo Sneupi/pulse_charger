@@ -43,5 +43,5 @@ class DAQ(DAQInput):
     
     def read_shunt_current(self):
         """Read the current through the shunt resistor"""
-        return (self.read_v2() - self.read_v1()) / self.resistance
+        return abs(self.read_v2() - self.read_v1()) / self.resistance
     
