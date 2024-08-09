@@ -1,12 +1,12 @@
 """Recording module for voltage and current data"""
 
-from controllers.daq import PulseChargeDAQ
+from controllers.daq import DAQ
 import csv
 import time
 
 class Recorder:
     """Class for periodically recording battery voltage and current data"""
-    def __init__(self, daq: PulseChargeDAQ, path: str, interval: float):
+    def __init__(self, daq: DAQ, path: str, interval: float):
         """
         Args:
             daq (PulseChargeDAQ): DAQ unit for reading voltage and current

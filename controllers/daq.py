@@ -14,17 +14,17 @@ class DAQInput:
     
     def read_v1(self):
         """Read the voltage on line 1 relative to ground"""
-        return self.task.read()
+        return self.task.read()[0]
     
     def read_v2(self):
         """Read the voltage on line 2 relative to ground"""
-        return self.task.read()
+        return self.task.read()[1]
     
     def __del__(self):
         self.task.stop()
         self.task.close()
         
-class PulseChargeDAQ(DAQInput):
+class DAQ(DAQInput):
     """Class for reading necessary circuit values from the DAQ unit"""
     def __init__(self, d_in1: int, d_in2: int, resistance: float):
         """
