@@ -2,6 +2,7 @@
 """
 
 import nidaqmx  # using the NI DAQ USB-6008
+import time
 
 class DAQInput:
     """Class for reading the voltage of two 
@@ -41,7 +42,21 @@ class DAQ(DAQInput):
         ground and after the shunt resistor"""
         return self.read_v2()
     
-    def read_shunt_current(self):
+    def _read_shunt_current(self):
         """Read the current through the shunt resistor"""
         return abs(self.read_v2() - self.read_v1()) / self.resistance
     
+    def read_shunt_current(self, sampling_interval: float, noise_thresh: float):
+        """Returns the average current through the 
+        shunt resistor over the given reading interval (seconds),
+        ignoring readings below the noise threshold."""
+        t = time.time()
+        data = []
+        # Read as many points as possible within interval
+        while time.time() - t < sampling_interval:
+            pt = self._read_shunt_current()
+            # Ignore readings below noise threshold
+            if pt < noise_thresh:
+                continue
+            data.append(self._read_shunt_current())
+        return sum(data) / len(data) if len(data) else 0

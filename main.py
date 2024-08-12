@@ -6,23 +6,21 @@ if __name__ == "__main__":
     from controllers.ssr import SSRPulser
     from controllers.daq import DAQ
     from WF_SDK import device, pattern
-    import time
+    from constants import *
+    
     dev = device.open()
     ssr = SSRPulser(dev, SSR_CHARGE_PIN)
-    ssr.open()
     daq = DAQ(SHUNT_PIN1, SHUNT_PIN2, 1)
-    flip_on = True
+    break_flag = False
+    
+    ssr.pulse(1, 75)
     try:
         while True:
-            flip_on = not flip_on
-            ssr.open() if flip_on else ssr.shut()
-            t = time.time()
-            data = []
-            while time.time() - t < 2:
-                data.append(daq.read_shunt_current())
-            print(sum(data) / len(data))
+            print(daq.read_shunt_current(SAMPLE_AVERAGING_INTERVAL, SHUNT_NOISE_THRESH))
+            if break_flag:
+                break
     except KeyboardInterrupt:
-        pass
+        break_flag = True
     
     ssr.shut()
     pattern.close(dev)

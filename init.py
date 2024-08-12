@@ -3,6 +3,7 @@
 from controllers.daq import DAQ       # Voltage & current reader
 from controllers.powersupply import PowerSupply  # PSU Controller
 from controllers.ssr import SSRPulser            # Relay(s) Controller
+from constants import *                          # Parameters
 
 def psu(psu: PowerSupply):
     """Power supply init procedure. Asserts
@@ -20,6 +21,8 @@ def ssrs(charge_ssr: SSRPulser, discharge_ssr: SSRPulser):
     
 def daq(daq: DAQ):
     """Shunt reader init procedure"""
-    assert daq.read_battery_voltage() == 0, f"Voltage should be 0: {daq.read_battery_voltage()}"
-    assert daq.read_shunt_current() == 0, f"Current should be 0: {daq.read_shunt_current()}"
+    v = daq.read_battery_voltage()
+    assert v == 0, f"Voltage should be 0: {v}"
+    i = daq.read_shunt_current(SAMPLE_AVERAGING_INTERVAL, SHUNT_NOISE_THRESH)
+    assert i == 0, f"Current should be 0: {i}"
     
