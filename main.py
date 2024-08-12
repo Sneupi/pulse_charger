@@ -7,22 +7,36 @@ if __name__ == "__main__":
     from controllers.daq import DAQ
     from WF_SDK import device, pattern
     from constants import *
+    import time
     
     dev = device.open()
-    ssr = SSRPulser(dev, SSR_CHARGE_PIN)
+    ssr_charge = SSRPulser(dev, SSR_CHARGE_PIN)
+    ssr_discharge = SSRPulser(dev, SSR_DISCHARGE_PIN)
     daq = DAQ(SHUNT_PIN1, SHUNT_PIN2, 1)
     break_flag = False
     
-    ssr.pulse(1, 75)
+    # ssr_charge.pulse(1, 75)
+    # try:
+    #     while True:
+    #         print(daq.read_shunt_current(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH))
+    #         if break_flag:
+    #             break
+    # except KeyboardInterrupt:
+    #     break_flag = True
+    
+    ssr_charge.shut()
+    ssr_discharge.open()
     try:
-        while True:
-            print(daq.read_shunt_current(SAMPLE_AVERAGING_INTERVAL, SHUNT_NOISE_THRESH))
+        while daq.read_battery_voltage() > BATT_V_LO:
+            print(daq.read_battery_voltage())  # FIXME testing
+            time.sleep(SAMPLE_INTERVAL)
             if break_flag:
                 break
     except KeyboardInterrupt:
         break_flag = True
-    
-    ssr.shut()
+        
+    ssr_charge.shut()
+    ssr_discharge.shut()
     pattern.close(dev)
     device.close(dev)
     exit()

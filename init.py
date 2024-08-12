@@ -23,6 +23,6 @@ def daq(daq: DAQ):
     """Shunt reader init procedure"""
     v = daq.read_battery_voltage()
     assert v == 0, f"Voltage should be 0: {v}"
-    i = daq.read_shunt_current(SAMPLE_AVERAGING_INTERVAL, SHUNT_NOISE_THRESH)
+    i = daq.read_shunt_current(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH)
     assert i == 0, f"Current should be 0: {i}"
     

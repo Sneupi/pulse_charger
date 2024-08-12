@@ -40,7 +40,7 @@ class DAQ(DAQInput):
     def read_battery_voltage(self):
         """Read the circuit voltage between 
         ground and after the shunt resistor"""
-        return self.read_v2()
+        return self.read_v2() + 1.4  # 1.4V offset NI USB-6008 in RSE
     
     def _read_shunt_current(self):
         """Read the current through the shunt resistor"""
