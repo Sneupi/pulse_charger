@@ -24,12 +24,22 @@ if __name__ == "__main__":
     # except KeyboardInterrupt:
     #     break_flag = True
     
-    ssr_charge.shut()
-    ssr_discharge.open()
+    # ssr_charge.shut()
+    # ssr_discharge.open()
+    # try:
+    #     while daq.read_battery_voltage() > BATT_V_LO:
+    #         print(daq.read_battery_voltage())  # FIXME testing
+    #         time.sleep(SAMPLE_INTERVAL)
+    #         if break_flag:
+    #             break
+    # except KeyboardInterrupt:
+    #     break_flag = True
+
+    # testing ssr switch frequency rating
     try:
-        while daq.read_battery_voltage() > BATT_V_LO:
-            print(daq.read_battery_voltage())  # FIXME testing
-            time.sleep(SAMPLE_INTERVAL)
+        ssr_discharge.pulse(100, 50)
+        while True:
+            time.sleep(1)
             if break_flag:
                 break
     except KeyboardInterrupt:
