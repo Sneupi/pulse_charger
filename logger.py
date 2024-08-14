@@ -11,7 +11,7 @@ class Logger:
         """Logs to file each string form of *args 
         delimited by commas following a timestamp"""
         with self.lock:
-            elements = ','.join([str(e) for e in args])
+            elements = ','.join([f"{e:.3f}" if isinstance(e, float) else str(e) for e in args])
             self.file.write(f'{datetime.datetime.now()},{elements}\n')
     
     def close(self):
