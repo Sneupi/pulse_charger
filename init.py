@@ -14,9 +14,9 @@ def psu(psu: PowerSupply):
     psu.set_current(CHG_CURRENT)
     psu.set_voltage(BATT_V_HI)
     assert psu.get_measured_voltage() == 0, \
-        f"Voltage should be 0: {psu.get_measured_voltage()}"
+        f"PSU voltage should be 0: {psu.get_measured_voltage()}"
     assert psu.get_measured_current() == 0, \
-        f"Current should be 0: {psu.get_measured_current()}"
+        f"PSU current should be 0: {psu.get_measured_current()}"
     
 def ssrs(charge_ssr: SSRPulser, discharge_ssr: SSRPulser):
     """SSR(s) init procedure. Sets both SSRs to off state."""
@@ -25,8 +25,6 @@ def ssrs(charge_ssr: SSRPulser, discharge_ssr: SSRPulser):
     
 def daq(daq: DAQ):
     """Shunt reader init procedure"""
-    v = daq.read_battery_voltage()
-    assert v == 0, f"Voltage should be 0: {v}"
-    i = daq.read_shunt_current(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH)
-    assert i == 0, f"Current should be 0: {i}"
+    i = daq.read_vdiff(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH)/SHUNT_RESISTANCE
+    assert i == 0, f"DAQ current should be 0: {i}"
     

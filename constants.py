@@ -26,8 +26,11 @@ BATT_V_HI   = 4.2               # V, battery max op
 BATT_V_LO   = 2.7               # V, battery min op
 
 # RUN PARAMETERS
-STANDING_TIME = 120             # s, idling time after tc
+STANDING_TIME = 2             # s, idling time after tc
 CHG_CURRENT   = 0.17            # A, charging amperage
 TC_CUTOFF_I   = 0.03            # A, taper charge low cutoff
+CAP_PCENT_EXIT = 0.7            # %, exit cycling at this % of initial capacity
+PULSE_FREQ    = 100            # Hz, pulse frequency
+PULSE_DUTY    = 50              # %, pulse duty cycle
 
 assert TC_CUTOFF_I > SHUNT_NOISE_THRESH, "Taper charge cutoff current must be above current noise threshold"
