@@ -1,89 +1,88 @@
 
+from constants import *
+from controllers.daq import DAQ
+from controllers.powersupply import PowerSupply
+from logger import Logger
+from constants import *
+from controllers.state import StateController
+import time
+import init
 
+BLUE = '\033[34m'
+WHITE = '\033[37m'
+GREEN = '\033[32m'
+YELLOW = '\033[33m'
+RED = '\033[31m'
 
-if __name__ == "__main__":
-    from constants import *
-    from controllers.ssr import SSRPulser
-    from controllers.daq import DAQ
-    from controllers.powersupply import PowerSupply
-    from WF_SDK import device, pattern
-    from constants import *
-    import time
-    
-    # Init devices
-    dev = device.open()
-    ssr_charge = SSRPulser(dev, SSR_CHARGE_PIN)
-    ssr_discharge = SSRPulser(dev, SSR_DISCHARGE_PIN)
-    daq = DAQ(SHUNT_PIN1, SHUNT_PIN2, 1)
-    psu = PowerSupply(port=PSU_PORT)
-    
-    def read():
-        """Returns measurements 
-        of current & volt as tuple
-        """
-        return daq.read_shunt_current(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH), daq.read_battery_voltage()
+# Init devices
+logger = Logger(CSV_PATH)
+daq = DAQ(SHUNT_PIN1, SHUNT_PIN2)
+psu = PowerSupply(PSU_PORT)
+state = StateController(psu, SSR_CHARGE_PIN, SSR_DISCHARGE_PIN)
+init.psu(psu)
+init.daq(daq)
 
-    def shutdown():
-        """Shuts down devices and exits"""
-        ssr_charge.shut()
-        ssr_discharge.shut()
-        psu.turn_off()
-        pattern.close(dev)
-        device.close(dev)
-        exit()
+def read():
+    return abs(daq.read_vdiff(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH))/SHUNT_RESISTANCE, daq.read_v2()
+
+def process(c,v):
+    """Processes current & voltage readings"""
+    global mAh_curr
+    c = round(c, 3) * 1000
+    v = round(v, 3)
+    mAh_step = c * SAMPLE_INTERVAL / 3600
+    mAh_curr += mAh_step
+    logger.log(c, v, mAh_step, mAh_curr)
+    print(f"{BLUE}I: {c:.01f}mA  |  V: {v:.03f}V  |  Step: {mAh_step:.04f}mAh  |  Sum: {mAh_curr:.04f}mAh{WHITE}")
     
-    # Initial (shutoff) state
-    ssr_charge.shut()
-    ssr_discharge.shut()
-    psu.turn_off()
-    psu.set_limit_current(BATT_I_CH + 0.1)
-    psu.set_limit_voltage(BATT_V_HI + 1)
-    psu.set_current(BATT_I_CH)
-    psu.set_voltage(BATT_V_HI)
+mAh_init = 0
+mAh_curr = 0
+c, v = read()
+
+try:
+    print(f"{GREEN}BEGIN CYCLING{WHITE}")
     
-    try:
-        # Begin
-        psu.turn_on()
-        c,v = read()
-    
-        # Pulse charge (CC) 
-        ssr_discharge.shut()
-        ssr_charge.open()  # FIXME pulse
-        while psu.get_measured_voltage() < BATT_V_HI:
-            print(c, v)
-            c, v = read()
+    while mAh_curr >= mAh_init * CAP_PCENT_EXIT:
         
-        # Taper charge (CV)
-        ssr_discharge.shut()
-        ssr_charge.open()
+        print(f"{GREEN}PULSE CHARGING...{WHITE}")
+        state.pulse(PULSE_FREQ, PULSE_DUTY)
+        time.sleep(2)
+        while psu.get_measured_current() > CHG_CURRENT:
+            c,v = read()
+            process(c,v)
+            
+        print(f"{GREEN}TAPER CHARGING...{WHITE}")
+        state.taper()
+        c,v = read()
+        process(c,v)
         while c > TC_CUTOFF_I:
-            print(c, v)
+            c,v = read()
+            process(c,v)
+        
+        print(f"{GREEN}STANDING FOR {STANDING_TIME} SEC...{WHITE}")
+        state.neutral()
+        t = time.time()
+        while time.time() - t < STANDING_TIME:
             c, v = read()
-            
-        # Discharge
-        ssr_charge.shut()
-        psu.turn_off()
-        ssr_discharge.open()
+            process(c,v)
+        
+        print(f"{GREEN}DISCHARGING...{WHITE}")
+        state.discharge()
         while v > BATT_V_LO:
-            print(c, v)
-            c, v = read()
-            
-    except KeyboardInterrupt:
-        shutdown()
-    shutdown()
+            c,v = read()
+            process(c,v)
+        
+        if mAh_init == 0:
+            mAh_init = mAh_curr
+    print(f"{GREEN}EXITED WITHOUT INTERRUPT{WHITE}")
+       
+except KeyboardInterrupt:
+    print(f"{YELLOW}EXITING FROM CTRL+C{WHITE}")
     
-
-# # User Parameters # FIXME un-hardcode
-# PSU_PORT          = str()    #       COM port for PSU
-# CSV_PATH          = str()    #       Path to save data
-# SHUNT_RESISTANCE  = float()  # (Ohms)
-# BATT_I_CHARGE     = float()  # (A)   CC setpoint
-# BATT_V_HI         = float()  # (V)   CC cutoff cond, CV setpoint
-# BATT_I_LO         = float()  # (A)   CV cutoff cond
-# BATT_V_LO         = float()  # (V)   Discharging cutoff cond
-# CYCLE_T_MAX       = float()  # (hr)  Abort cond (per any battery cycle)
-# CHARGE_T_MAX      = float()  # (hr)  Abort cond (in charge step)
-# CAPACITY_LO_PCENT = float()  # (%)   Abort cond (in discharge step)
-# PULSE_FREQ        = float()  # (Hz)
-# PULSE_DUTY        = float()  # (%)
-# SAMPLE_INTERVAL   = float()  # (s)
+except Exception as e:
+    print(f"{RED}UNHANDLED EXCEPTION:\n{e}{WHITE}")
+    
+del state
+del psu
+del daq
+del logger
