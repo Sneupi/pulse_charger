@@ -21,9 +21,9 @@ class DAQ:
         """Read the voltage on line 2 relative to ground"""
         return self.task.read()[1] + 1.4  # offset bc RSE mode
     
-    def read_vdiff(self):
+    def _read_vdiff(self):
         """Read the voltage difference between the two lines"""
-        return self.read_v2() - self.read_v1()
+        return self.read_v1() - self.read_v2()
     
     def read_vdiff(self, sampling_interval: float, noise_thresh: float):
         """Returns the average voltage difference between the two lines
@@ -33,7 +33,7 @@ class DAQ:
         data = []
         # Read as many points as possible within interval
         while time.time() - t < sampling_interval:
-            pt = self.read_v2() - self.read_v1()
+            pt = self._read_vdiff()
             # Ignore readings below noise threshold
             if pt < noise_thresh:
                 continue
