@@ -97,4 +97,7 @@ class PowerSupply:
             return string
     
     def __del__(self):
-        self.serial.close()
+        try:
+            self.serial.close()
+        except AttributeError:
+            pass
