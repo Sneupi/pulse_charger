@@ -7,9 +7,11 @@ class Logger:
         self.file = open(filepath, mode)
         self.lock = Lock()  # multithreading access lock
         
-    def log(self, tuple_):
+    def log(self, *args):
+        """Logs to file each string form of *args 
+        delimited by commas following a timestamp"""
         with self.lock:
-            elements = ','.join(tuple_)
+            elements = ','.join([str(e) for e in args])
             self.file.write(f'{datetime.datetime.now()},{elements}\n')
     
     def close(self):
