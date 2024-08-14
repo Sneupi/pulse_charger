@@ -5,61 +5,73 @@ if __name__ == "__main__":
     from constants import *
     from controllers.ssr import SSRPulser
     from controllers.daq import DAQ
+    from controllers.powersupply import PowerSupply
     from WF_SDK import device, pattern
     from constants import *
     import time
     
+    # Init devices
     dev = device.open()
     ssr_charge = SSRPulser(dev, SSR_CHARGE_PIN)
     ssr_discharge = SSRPulser(dev, SSR_DISCHARGE_PIN)
     daq = DAQ(SHUNT_PIN1, SHUNT_PIN2, 1)
-    break_flag = False
+    psu = PowerSupply(port=PSU_PORT)
     
-    # ssr_charge.pulse(1, 75)
-    # try:
-    #     while True:
-    #         print(daq.read_shunt_current(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH))
-    #         if break_flag:
-    #             break
-    # except KeyboardInterrupt:
-    #     break_flag = True
-    
-    # ssr_charge.shut()
-    # ssr_discharge.open()
-    # try:
-    #     while daq.read_battery_voltage() > BATT_V_LO:
-    #         print(daq.read_battery_voltage())  # FIXME testing
-    #         time.sleep(SAMPLE_INTERVAL)
-    #         if break_flag:
-    #             break
-    # except KeyboardInterrupt:
-    #     break_flag = True
+    def read():
+        """Returns measurements 
+        of current & volt as tuple
+        """
+        return daq.read_shunt_current(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH), daq.read_battery_voltage()
 
-    # testing ssr switch frequency rating
-    try:
-        ssr_discharge.pulse(100, 50)
-        while True:
-            time.sleep(1)
-            if break_flag:
-                break
-    except KeyboardInterrupt:
-        break_flag = True
-        
+    def shutdown():
+        """Shuts down devices and exits"""
+        ssr_charge.shut()
+        ssr_discharge.shut()
+        psu.turn_off()
+        pattern.close(dev)
+        device.close(dev)
+        exit()
+    
+    # Initial (shutoff) state
     ssr_charge.shut()
     ssr_discharge.shut()
-    pattern.close(dev)
-    device.close(dev)
-    exit()
-
-
-
-# from controllers.daq import DAQ       # Shunt & battery DAQ
-# from controllers.powersupply import PowerSupply  # PSU control
-# from controllers.ssr import SSRPulser            # Relay(s) control
-# from constants import *                          # Device pins
-# from WF_SDK import device, pattern               # drivers for Digilent (the SSR controller)
-# import init                                      # Init procedures
-# from recorder import Recorder                    # Data recording
+    psu.turn_off()
+    psu.set_limit_current(BATT_I_CH + 0.1)
+    psu.set_limit_voltage(BATT_V_HI + 1)
+    psu.set_current(BATT_I_CH)
+    psu.set_voltage(BATT_V_HI)
+    
+    try:
+        # Begin
+        psu.turn_on()
+        c,v = read()
+    
+        # Pulse charge (CC) 
+        ssr_discharge.shut()
+        ssr_charge.open()  # FIXME pulse
+        while psu.get_measured_voltage() < BATT_V_HI:
+            print(c, v)
+            c, v = read()
+        
+        # Taper charge (CV)
+        ssr_discharge.shut()
+        ssr_charge.open()
+        while c > TC_CUTOFF_I:
+            print(c, v)
+            c, v = read()
+            
+        # Discharge
+        ssr_charge.shut()
+        psu.turn_off()
+        ssr_discharge.open()
+        while v > BATT_V_LO:
+            print(c, v)
+            c, v = read()
+            
+    except KeyboardInterrupt:
+        shutdown()
+    shutdown()
+    
 
 # # User Parameters # FIXME un-hardcode
 # PSU_PORT          = str()    #       COM port for PSU
@@ -75,31 +87,3 @@ if __name__ == "__main__":
 # PULSE_FREQ        = float()  # (Hz)
 # PULSE_DUTY        = float()  # (%)
 # SAMPLE_INTERVAL   = float()  # (s)
-
-# DEBUG = True
-
-# # Controllers
-# diligent = device.open()
-# charge_ssr = SSRPulser(diligent, pin=SSR_CHARGE_PIN)
-# discharge_ssr = SSRPulser(diligent, pin=SSR_DISCHARGE_PIN)
-# psu = PowerSupply(port=PSU_PORT)
-# daq = DAQ(SHUNT_PIN1, SHUNT_PIN2, SHUNT_RESISTANCE)
-# recorder = Recorder(daq, CSV_PATH, interval=SAMPLE_INTERVAL)
-
-# # Globals
-# capactiy = 0  # (mAh) Running total of accumulated capacity
-
-# # Init Procedures
-# init.ssrs(charge_ssr, discharge_ssr)
-# init.psu(psu)
-# init.daq(daq)
-
-# # TODO main loop here
-
-# # Cleanup procedure
-# charge_ssr.shut()
-# discharge_ssr.shut()
-# psu.turn_off()
-# recorder.stop()
-# pattern.close(diligent)    
-# device.close(diligent)
