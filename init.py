@@ -9,6 +9,10 @@ def psu(psu: PowerSupply):
     """Power supply init procedure. Asserts
     system is completely off."""
     psu.turn_off()
+    psu.set_limit_current(CHG_CURRENT + 0.1)
+    psu.set_limit_voltage(BATT_V_HI + 1)
+    psu.set_current(CHG_CURRENT)
+    psu.set_voltage(BATT_V_HI)
     assert psu.get_measured_voltage() == 0, \
         f"Voltage should be 0: {psu.get_measured_voltage()}"
     assert psu.get_measured_current() == 0, \
