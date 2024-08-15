@@ -1,88 +1,119 @@
 
 from constants import *
 from controllers.daq import DAQ
-from controllers.powersupply import PowerSupply
 from logger import Logger
 from constants import *
-from controllers.state import StateController
+from controllers.state import StateController, State
 import time
-import init
+import printing as term_print
+from threading import Timer
 
-BLUE = '\033[34m'
-WHITE = '\033[37m'
-GREEN = '\033[32m'
-YELLOW = '\033[33m'
-RED = '\033[31m'
+class PulseChargeException(Exception):
+    pass
+class TaperChargeException(Exception):
+    pass
 
-# Init devices
 logger = Logger(CSV_PATH)
 daq = DAQ(SHUNT_PIN1, SHUNT_PIN2)
-psu = PowerSupply(PSU_PORT)
-state = StateController(psu, SSR_CHARGE_PIN, SSR_DISCHARGE_PIN)
-init.psu(psu)
-init.daq(daq)
+ctrl = StateController(PSU_PORT, BATT_V_HI, CHG_CURRENT, 
+                        SSR_CHARGE_PIN, SSR_DISCHARGE_PIN)
 
-def read():
-    return abs(daq.read_vdiff(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH))/SHUNT_RESISTANCE, daq.read_v2()
-
-def process(c,v):
-    """Processes current & voltage readings"""
-    global mAh_curr
-    c = round(c, 3) * 1000
-    v = round(v, 3)
-    mAh_step = c * SAMPLE_INTERVAL / 3600
-    mAh_curr += mAh_step
-    logger.log(c, v, mAh_step, mAh_curr)
-    print(f"{BLUE}I: {c:.01f}mA  |  V: {v:.03f}V  |  Step: {mAh_step:.04f}mAh  |  Sum: {mAh_curr:.04f}mAh{WHITE}")
+def read_current():
+    """Current through shunt resistor
     
-mAh_init = 0
-mAh_curr = 0
-c, v = read()
+    WARNING: blocking for SAMPLE_INTERVAL seconds"""
+    return daq.read_vdiff(SAMPLE_INTERVAL, SHUNT_NOISE_THRESH) / SHUNT_RESISTANCE
 
-try:
-    print(f"{GREEN}BEGIN CYCLING{WHITE}")
+def read_v_bat():
+    """Voltage of the battery"""
+    return daq.read_v2()
+
+def read_v_psu():
+    """Voltage of the power supply"""
+    return ctrl.psu.get_measured_voltage()
+
+def get_dQ(mA, sec):
+    """Gets mAh over step interval"""
+    return mA * (sec / 3600)
+
+def get_dt(t_beg, t_end):
+    """Gets the time elapsed in seconds"""
+    return t_end - t_beg
+
+try: 
+    cycle_number = 0
+    mAh_initial = None
+    term_print.begin(cycle_number)
     
-    while mAh_curr >= mAh_init * CAP_PCENT_EXIT:
+    while (mAh_initial is None) or (mAh > mAh_initial * CAP_PCENT_EXIT):
+        mAh = 0
+        t_pulse = None
+        t_taper = None
         
-        print(f"{GREEN}PULSE CHARGING...{WHITE}")
-        state.pulse(PULSE_FREQ, PULSE_DUTY)
-        time.sleep(2)
-        while psu.get_measured_current() > CHG_CURRENT:
-            c,v = read()
-            process(c,v)
+        # First state
+        term_print.pulse()
+        ctrl.pulse(PULSE_FREQ, PULSE_DUTY)
+        t_pulse = time.time()
+        
+        # State machine
+        while True:
             
-        print(f"{GREEN}TAPER CHARGING...{WHITE}")
-        state.taper()
-        c,v = read()
-        process(c,v)
-        while c > TC_CUTOFF_I:
-            c,v = read()
-            process(c,v)
+            # Measure
+            t_beg = time.time()
+            amps, v_bat, v_psu = read_current(), read_v_bat(), read_v_psu()
+            t_end = time.time()
+            mA = amps * 1000
+            dt = get_dt(t_beg, t_end)
+            dQ = get_dQ(mA, dt)
+            
+            # Log & Print
+            logger.log(cycle_number, dt, mA, v_bat, v_psu, dQ)
+            term_print.stats(cycle_number, dt, mA, v_bat, v_psu, dQ)
+            
+            # If discharging, do mAh sum
+            if ctrl.state == State.DISCHARGE:
+                mAh += abs(dQ)
+            
+            # State-based control
+            match ctrl.state:
+                case State.PULSE:
+                    # Transition
+                    if isinstance(v_psu, float) and v_psu >= BATT_V_HI:  
+                        term_print.taper()
+                        ctrl.taper()
+                        t_taper = time.time()  
+                    # Timeout
+                    elif time.time() - t_pulse >= PC_TIMEOUT:
+                        raise PulseChargeException("Timeout")
+                        
+                case State.TAPER:
+                    # Transition
+                    if mA <= TC_CUTOFF_I:  
+                        term_print.stand(STANDING_TIME)
+                        ctrl.neutral()
+                        # Transitions to discharge after standing
+                        Timer(STANDING_TIME, lambda: term_print.discharge() or ctrl.discharge()).start()
+                    # Timeout
+                    elif time.time() - t_taper >= TC_TIMEOUT:
+                        raise TaperChargeException("Timeout")
+                    
+                case State.DISCHARGE:
+                    # Transition
+                    if v_bat <= BATT_V_LO:  
+                        break
         
-        print(f"{GREEN}STANDING FOR {STANDING_TIME} SEC...{WHITE}")
-        state.neutral()
-        t = time.time()
-        while time.time() - t < STANDING_TIME:
-            c, v = read()
-            process(c,v)
-        
-        print(f"{GREEN}DISCHARGING...{WHITE}")
-        state.discharge()
-        while v > BATT_V_LO:
-            c,v = read()
-            process(c,v)
-        
-        if mAh_init == 0:
-            mAh_init = mAh_curr
-    print(f"{GREEN}EXITED WITHOUT INTERRUPT{WHITE}")
+        # End of cycle
+        if mAh_initial is None:
+            mAh_initial = mAh
+        cycle_number += 1
+    
+    # Exit Program
+    term_print.exit_ok()
        
 except KeyboardInterrupt:
-    print(f"{YELLOW}EXITING FROM CTRL+C{WHITE}")
+    term_print.kb_interrupt()
     
 except Exception as e:
-    print(f"{RED}UNHANDLED EXCEPTION:\n{e}{WHITE}")
+    term_print.exception(e)
     
-del state
-del psu
-del daq
-del logger
+input("(PRESS ENTER TO CLOSE)")
