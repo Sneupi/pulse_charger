@@ -10,8 +10,8 @@ RED    = '\033[31m'
 def stats(*args):
     print(f"{BLUE}{'  |  '.join([str(round(e,3)) if isinstance(e, float) else str(e) for e in args])}{WHITE}")
 
-def begin():
-    print(f"{GREEN}BEGIN CYCLING{WHITE}")
+def begin(cycle_number):
+    print(f"{GREEN}BEGIN CYCLE {cycle_number}{WHITE}")
     
 def pulse():
     print(f"{GREEN}PULSE CHARGING...{WHITE}")
