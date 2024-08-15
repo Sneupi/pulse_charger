@@ -27,8 +27,8 @@ BATT_V_LO   = 2.7               # V, battery min op
 
 # RUN PARAMETERS
 STANDING_TIME = 2             # s, idling time after tc
-CHG_CURRENT   = 0.17            # A, charging amperage
-TC_CUTOFF_I   = 0.03            # A, taper charge low cutoff
+CHG_CURRENT   = 170            # mA, charging amperage
+TC_CUTOFF_I   = 30            # mA, taper charge low cutoff
 CAP_PCENT_EXIT = 70             # %, exit cycling at this % of initial capacity
 PULSE_FREQ    = 100            # Hz, pulse frequency
 PULSE_DUTY    = 50              # %, pulse duty cycle
