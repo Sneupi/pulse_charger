@@ -1,6 +1,13 @@
 from .powersupply import PowerSupply
 from .ssr import SSRPulser
 from WF_SDK import device, pattern
+from enum import Enum
+
+class State(Enum):
+    PULSE = 1
+    TAPER = 2
+    NEUTRAL = 3
+    DISCHARGE = 4
     
 class StateController:
     """Hardware controller for state switching"""
@@ -22,24 +29,28 @@ class StateController:
         self.psu.turn_off()
         self.ssr_c.shut()
         self.ssr_d.shut()
+        self.state = State.NEUTRAL
         
     def pulse(self, freq, duty):
         """Pulse charge"""
         self.psu.turn_on()
         self.ssr_c.open()  # FIXME pulse
         self.ssr_d.shut()
+        self.state = State.PULSE
         
     def taper(self):
         """Taper charge"""
         self.psu.turn_on()
         self.ssr_c.open()
         self.ssr_d.shut()
+        self.state = State.TAPER
         
     def discharge(self):
         """Discharge"""
         self.psu.turn_off()
         self.ssr_c.shut()
         self.ssr_d.open()
+        self.state = State.DISCHARGE
     
     def __del__(self):
         self.neutral()
