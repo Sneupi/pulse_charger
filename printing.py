@@ -11,7 +11,7 @@ def stats(*args):
     print(f"{BLUE}{'  |  '.join([str(round(e,3)) if isinstance(e, float) else str(e) for e in args])}{WHITE}")
 
 def begin(cycle_number):
-    print(f"{GREEN}BEGIN CYCLE {cycle_number}{WHITE}")
+    print(f"{GREEN}BEGIN CYCLER (PRESS CTRL+C TO EXIT){WHITE}")
     
 def pulse():
     print(f"{GREEN}PULSE CHARGING...{WHITE}")
