@@ -35,7 +35,7 @@ class DAQ:
         while time.time() - t < sampling_interval:
             pt = self._read_vdiff()
             # Ignore readings below noise threshold
-            if pt < noise_thresh:
+            if abs(pt) < noise_thresh:
                 continue
             data.append(pt)
         return sum(data) / len(data) if len(data) else 0.0
