@@ -13,6 +13,7 @@ class PulseGenerator:
         self.pin = pin
         self.device_data = device_data
         self.running = False
+        self.stop()
         
     def run(self, frequency, duty_cycle):
         """Generate a certain freq PWM signal 
@@ -22,8 +23,8 @@ class PulseGenerator:
         pattern.generate(self.device_data, channel=self.pin, 
                          function=pattern.function.pulse, 
                          frequency=frequency, 
-                         duty_cycle=duty_cycle)
-        self.running = True
+                         duty_cycle=100-duty_cycle)  # BDMS is inverted
+        self.running = True if duty_cycle > 0 else False
 
     def stop(self):
         """stop the pattern generator"""
