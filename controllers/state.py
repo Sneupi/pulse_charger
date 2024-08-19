@@ -2,7 +2,6 @@ from .powersupply import PowerSupply
 from .ssr import SSRPulser
 from WF_SDK import device, pattern
 from enum import Enum
-from .diligentsupply import DiligentSupply
 
 class State(Enum):
     PULSE = 1
@@ -12,25 +11,13 @@ class State(Enum):
     
 class StateController:
     """Hardware controller for state switching"""
-    def __init__(self, psu_com, psu_set_v, psu_set_i, pin_ssr_chg, pin_ssr_dis, ssr_voltage, ssr_current):
-        """
-        Args:
-            psu_com (str): Device COM port
-            psu_set_v (int): Set voltage of pulse charger
-            psu_set_i (float): Set current of pulse charger
-            pin_ssr_chg (int): Pin number for SSR charge
-            pin_ssr_dis (int): Pin number for SSR discharge
-            ssr_voltage (float): Voltage to run SSR inputs at
-            ssr_current (int): Current to run SSR inputs at
-        """
+    def __init__(self, psu_com, psu_set_v, psu_set_i, pin_ssr_chg, pin_ssr_dis):
         
         self.dev = device.open()
-        self.diligent_supply = DiligentSupply(self.dev, ssr_voltage, ssr_current)
         self.ssr_c = SSRPulser(self.dev, pin_ssr_chg)
         self.ssr_d = SSRPulser(self.dev, pin_ssr_dis)
         self.psu = PowerSupply(psu_com)
         self.neutral()
-        self.diligent_supply.turn_on()
         
         self.psu.set_limit_voltage(psu_set_v + 1)
         self.psu.set_limit_current(psu_set_i + 0.1)
@@ -67,6 +54,5 @@ class StateController:
     
     def __del__(self):
         self.neutral()
-        self.diligent_supply.close()
         pattern.close(self.dev)
         device.close(self.dev)
