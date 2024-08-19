@@ -16,7 +16,8 @@ class TaperChargeException(Exception):
 logger = Logger(CSV_PATH)
 daq = DAQ(SHUNT_PIN1, SHUNT_PIN2)
 ctrl = StateController(PSU_PORT, BATT_V_HI, CHG_CURRENT, 
-                        SSR_CHARGE_PIN, SSR_DISCHARGE_PIN)
+                        SSR_CHARGE_PIN, SSR_DISCHARGE_PIN, 
+                        SSR_INPUT_V, SSR_INPUT_I)
 
 def read_current():
     """Current through shunt resistor
