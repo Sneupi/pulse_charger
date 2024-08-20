@@ -78,7 +78,7 @@ try:
             match ctrl.state:
                 case State.PULSE:
                     # Transition
-                    if isinstance(v_psu, float) and v_psu >= BATT_V_HI:  
+                    if amps < CHG_CURRENT - SHUNT_NOISE_THRESH: 
                         term_print.taper()
                         ctrl.taper()
                         t_taper = time.time()  
@@ -88,7 +88,7 @@ try:
                         
                 case State.TAPER:
                     # Transition
-                    if mA <= TC_CUTOFF_I:  
+                    if amps <= TC_CUTOFF_I:  
                         term_print.stand(STANDING_TIME)
                         ctrl.neutral()
                         # Transitions to discharge after standing
@@ -116,4 +116,6 @@ except KeyboardInterrupt:
 except Exception as e:
     term_print.exception(e)
     
-input("(PRESS ENTER TO CLOSE)")
+finally:
+    ctrl.neutral()
+    input("(PRESS ENTER TO CLOSE)")
