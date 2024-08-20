@@ -54,6 +54,7 @@ try:
         term_print.pulse()
         ctrl.pulse(PULSE_FREQ, PULSE_DUTY)
         t_pulse = time.time()
+        term_print.stats("cycle", "dt", "mA", "v_bat", "v_psu", "dQ")
         
         # State machine
         while True:
@@ -78,7 +79,7 @@ try:
             match ctrl.state:
                 case State.PULSE:
                     # Transition
-                    if amps < CHG_CURRENT - SHUNT_NOISE_THRESH: 
+                    if v_psu >= BATT_V_HI: 
                         term_print.taper()
                         ctrl.taper()
                         t_taper = time.time()  
