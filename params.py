@@ -18,6 +18,8 @@ PC_TIMEOUT = int()              # s, pulse charge timeout
 TC_TIMEOUT = int()              # s, taper charge timeout
 
 def get_input():
+    """Function called to get user-input constants & 
+    parameters to be used in the pulse charge system"""
     global PSU_PORT, SHUNT_RESISTANCE, SHUNT_NOISE_THRESH, CSV_PATH, \
     SAMPLE_INTERVAL, BATT_V_HI, BATT_V_LO, STANDING_TIME, CHG_CURRENT, \
     TC_CUTOFF_I, CAP_PCENT_EXIT, PULSE_FREQ, PULSE_DUTY, PC_TIMEOUT, TC_TIMEOUT
