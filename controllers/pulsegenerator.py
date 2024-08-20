@@ -3,7 +3,11 @@
 from WF_SDK import device, pattern, error   # using the Digilent WaveForms SDK
 
 class PulseGenerator:
-    """Pulse pattern generator"""
+    """Pulse pattern generator
+    
+    NOTE: (See method run) Duty cycle is 
+    inverted due to the SSR (BDMS) 
+    chosen being active low."""
     def __init__(self, device_data, pin):
         """
         Args:
