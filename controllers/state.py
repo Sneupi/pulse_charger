@@ -34,7 +34,7 @@ class StateController:
     def pulse(self, freq, duty):
         """Pulse charge"""
         self.psu.turn_on()
-        self.ssr_c.open()  # FIXME pulse
+        self.ssr_c.pulse(freq, duty)
         self.ssr_d.shut()
         self.state = State.PULSE
         
