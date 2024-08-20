@@ -28,7 +28,6 @@ class PulseGenerator:
 
     def stop(self):
         """stop the pattern generator"""
-        if self.running:
-            # hacky, as to not close other pattern channels
-            self.run(1, 0)  
-            self.running = False
+        # hacky, as to not close other pattern channels
+        self.run(1, 0)  
+        self.running = False
