@@ -10,28 +10,28 @@ SSR_DISCHARGE_PIN = 32
 SHUNT_PIN1 = 0  # ai0
 SHUNT_PIN2 = 1  # ai1
 
-# PSU
-PSU_PORT = "COM14"
+# # PSU
+# PSU_PORT = "COM14"
 
-# SHUNT
-SHUNT_RESISTANCE = 1  # Ohms
-SHUNT_NOISE_THRESH = 0.01  # Amps
+# # SHUNT
+# SHUNT_RESISTANCE = 1  # Ohms
+# SHUNT_NOISE_THRESH = 0.01  # Amps
 
-# READINGS
-CSV_PATH = "data.csv"
-SAMPLE_INTERVAL = 5  # seconds
+# # READINGS
+# CSV_PATH = "data.csv"
+# SAMPLE_INTERVAL = 5  # seconds
 
-# BATTERY LIMITS
-BATT_V_HI   = 4.2               # V, battery max op
-BATT_V_LO   = 2.7               # V, battery min op
+# # BATTERY LIMITS
+# BATT_V_HI   = 4.2               # V, battery max op
+# BATT_V_LO   = 2.7               # V, battery min op
 
-# RUN PARAMETERS
-STANDING_TIME = 2             # s, idling time after tc
-CHG_CURRENT   = .17            # A, charging amperage
-TC_CUTOFF_I   = .03            # A, taper charge low cutoff
-CAP_PCENT_EXIT = .7             # %, exit cycling at this % of initial capacity
-PULSE_FREQ    = 2500            # Hz, pulse frequency
-PULSE_DUTY    = 75              # %, pulse duty cycle
-PC_TIMEOUT    = 3600              # s, pulse charge timeout
-TC_TIMEOUT    = 3600              # s, taper charge timeout
-assert TC_CUTOFF_I > SHUNT_NOISE_THRESH, "Taper charge cutoff current must be above current noise threshold"
+# # RUN PARAMETERS
+# STANDING_TIME = 2             # s, idling time after tc
+# CHG_CURRENT   = .17            # A, charging amperage
+# TC_CUTOFF_I   = .03            # A, taper charge low cutoff
+# CAP_PCENT_EXIT = .7             # %, exit cycling at this % of initial capacity
+# PULSE_FREQ    = 2500            # Hz, pulse frequency
+# PULSE_DUTY    = 75              # %, pulse duty cycle
+# PC_TIMEOUT    = 3600              # s, pulse charge timeout
+# TC_TIMEOUT    = 3600              # s, taper charge timeout
+# assert TC_CUTOFF_I > SHUNT_NOISE_THRESH, "Taper charge cutoff current must be above current noise threshold"
