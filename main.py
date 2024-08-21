@@ -80,7 +80,7 @@ try:
             match ctrl.state:
                 case State.PULSE:
                     # Transition
-                    if v_psu >= BATT_V_HI: 
+                    if amps <= CHG_CURRENT - SHUNT_NOISE_THRESH: 
                         term_print.taper()
                         ctrl.taper()
                         t_taper = time.time()  
