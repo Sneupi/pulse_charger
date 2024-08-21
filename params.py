@@ -36,6 +36,6 @@ def get_input():
     TC_CUTOFF_I = float(input("Enter the taper charge cutoff current (Amps): "))
     CAP_PCENT_EXIT = float(input("Enter the capacity percent exit (0.0 to 1.0): "))
     PULSE_FREQ = int(input("Enter the pulse frequency (Hz): "))
-    PULSE_DUTY = int(input("Enter the pulse duty cycle (0-100%): "))
+    PULSE_DUTY = int(input("Enter the pulse duty cycle (0 to 100): "))
     PC_TIMEOUT = int(input("Enter the pulse charge timeout (sec): "))
     TC_TIMEOUT = int(input("Enter the taper charge timeout (sec): "))
