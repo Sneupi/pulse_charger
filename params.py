@@ -22,7 +22,6 @@ import printing as term_print
 try: 
     PSU_PORT           = str(input("Enter the PSU port: "))
     SHUNT_RESISTANCE   = float(input("Enter the shunt resistance (Ohms): "))
-    SHUNT_NOISE_THRESH = float(input("Enter the shunt noise threshold (Amps): "))
     CSV_PATH           = str(input("Enter the CSV path: "))
     SAMPLE_INTERVAL    = float(input("Enter the sample interval (sec): "))
     BATT_V_HI          = float(input("Enter the battery upper voltage lim (V): "))
