@@ -14,7 +14,6 @@ class PulseChargeException(Exception):
 class TaperChargeException(Exception):
     pass
 
-get_input()  # from params.py
 logger = Logger(CSV_PATH)
 daq = DAQ(SHUNT_PIN1, SHUNT_PIN2)
 ctrl = StateController(PSU_PORT, BATT_V_HI, CHG_CURRENT, 
